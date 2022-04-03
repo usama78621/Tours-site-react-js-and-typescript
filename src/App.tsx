@@ -1,26 +1,53 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { FC, useEffect, useState } from "react";
+import "./App.css";
+import Loding from "./components/loading/Loding";
+import Reload from "./components/reload/Reload";
+import Tours from "./components/tours/Tours";
 
-function App() {
+const url = "https://course-api.com/react-tours-project";
+
+
+const App = () => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [tours, setTours] = useState<{id:string}[]>([]);
+
+  const removeTour = (id:string)=>{
+    const newTour = tours.filter((tour)=> tour.id !== id);
+  setTours(newTour)
+  }
+
+
+  const featchTours = async () => {
+    setLoading(true);
+    try {
+      const respoenses = await fetch(url);
+      const tours = await respoenses.json();
+      setLoading(false);
+      setTours(tours);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    featchTours();
+  }, []);
+
+  if (loading) {
+    return (
+      <main>
+        <Loding />
+      </main>
+    );
+  }
+  if(tours.length === 0){
+   return <Reload featchTours={featchTours}/>
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <Tours removeTour={removeTour} tours={tours} />
+    </main>
   );
-}
+};
 
 export default App;
